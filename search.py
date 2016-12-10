@@ -3,14 +3,15 @@ from ways.graph import load_map_from_csv, Junction, Link, AbstractLink
 
 
 class Node:
-    def __init__(self, state, parent, cost, parent_link = None):
+    def __init__(self, state, parent, cost, parent_link = None, h = 0):
         self.state = state
         self.parent = parent
         self.cost = cost
         self.parent_link = parent_link
+        self.h = h
 
     def __lt__(self, other):
-        return self.cost < other.cost
+        return self.cost + self.h < other.cost + other.h
 
     def __eq__(self, other):
         return self.state == other.state

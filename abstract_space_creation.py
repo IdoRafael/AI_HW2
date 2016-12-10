@@ -1,6 +1,6 @@
 from ways.graph import load_map_from_csv
 import pickle
-from uniform_cost_search import make_abstract_junction
+from search import make_abstract_junction
 from ways.tools import timed, dbopen
 
 @timed

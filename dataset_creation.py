@@ -1,6 +1,6 @@
 from ways.graph import load_map_from_csv
 from random import choice
-from uniform_cost_search import find_dataset_neighbour
+from search import find_dataset_neighbour
 from ways.tools import dbopen
 
 

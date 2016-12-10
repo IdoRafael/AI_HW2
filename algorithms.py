@@ -1,5 +1,5 @@
 from ways.graph import load_map_from_csv
-from uniform_cost_search import uniform_cost_search, find_nearest_center, uniform_cost_search_abstract
+from search import uniform_cost_search, find_nearest_center, uniform_cost_search_abstract
 from ways.tools import compute_distance
 
 def find_nearest_center_by_air(target, roads_junctions, centers):
