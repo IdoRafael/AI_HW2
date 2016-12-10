@@ -69,17 +69,19 @@ def _decrease_key(heap, index, new_key):
     _siftdown(heap, 0, index)
 
 
-def _uniform_cost_search_aux(source, roads_junctions, result_function, result_item, cost_function,
-                             goal_test, centers=None, target=None, solution_limit=1):
-    open_heapq = [Node(source, None, 0)]
+def _a_star_search_aux(source, roads_junctions, result_function, result_item, heuristic_function,
+                       cost_function, goal_test, centers=None, target=None, solution_limit=1):
+    open_heapq = [Node(source, None, 0, None, heuristic_function(source, target, roads_junctions))]
     open_set = {source}
-    close = set()
+    closed = dict()
     result_list = []
+    num_closed = 0
 
     while open_heapq:
         next = heappop(open_heapq)
         open_set.discard(next.state)
-        close.add(next.state)
+        closed[next.state] = next
+        num_closed += 1
 
         if goal_test(next, centers, source, target):
             result_list.append(result_item(next))
@@ -89,20 +91,44 @@ def _uniform_cost_search_aux(source, roads_junctions, result_function, result_it
                 continue
 
         for link in _expand(next.state, roads_junctions):
-            if link.target not in close:
-                new_cost = next.cost + cost_function(link)
-                if link.target in open_set:
-                    old_node_index = open_heapq.index(Node(link.target, None, None))
-                    old_node = open_heapq[old_node_index]
-                    if old_node.cost > new_cost:
+            new_cost = next.cost + cost_function(link)
+
+            if link.target in open_set:  # A node with state link.target exists in OPEN
+                old_node_index = open_heapq.index(Node(link.target, None, None))
+                old_node = open_heapq[old_node_index]
+                if old_node.cost > new_cost:  # If new parent is better
+                    old_node.parent = next
+                    old_node.parent_link = link.path if type(link) is AbstractLink else None
+                    _decrease_key(open_heapq, old_node_index, new_cost)
+
+            else:  # State not in OPEN. Maybe in CLOSED
+                old_node = closed.get(link.target, None)
+                if old_node is not None:  # A node with state link.target exists in CLOSED
+                    if old_node.cost > new_cost:  # If new parent is better
                         old_node.parent = next
                         old_node.parent_link = link.path if type(link) is AbstractLink else None
-                        _decrease_key(open_heapq, old_node_index, new_cost)
+                        old_node.cost = new_cost
+                        del closed[link.target]
+                        heappush(open_heapq, old_node)
+                        open_set.add(link.target)
                 else:
                     heappush(open_heapq, Node(link.target, next, new_cost,
-                                              link.path if type(link) is AbstractLink else None))
+                                              link.path if type(link) is AbstractLink else None,
+                                              heuristic_function(link.target, target, roads_junctions)))
                     open_set.add(link.target)
-    return result_function(source, result_list, roads_junctions, close)
+    return result_function(source, result_list, roads_junctions, closed, num_closed)
+
+
+def _uniform_cost_search_aux(source, roads_junctions, result_function, result_item, cost_function,
+                             goal_test, centers=None, target=None, solution_limit=1):
+    def heuristic_function(source, target, roads_junctions):
+        return 0
+
+    def result_function_astar(source, result_list, roads_junctions, closed, num_closed):
+        return result_function(source, result_list, roads_junctions, closed)
+
+    return _a_star_search_aux(source, roads_junctions, result_function_astar, result_item, heuristic_function,
+                              cost_function, goal_test, centers, target, solution_limit)
 
 
 def uniform_cost_search(source, target, cost_function, roads_junctions):
@@ -187,7 +213,7 @@ def find_nearest_center(source, centers, roads_junctions):
     )
 
 
-def uniform_cost_search_abstract(source, target, abstract_map):
+def uniform_cost_search_abstract(source, target, cost_function, abstract_map):
     def result_item(next):
         return _abstract_path(next), next.cost
 
@@ -200,9 +226,41 @@ def uniform_cost_search_abstract(source, target, abstract_map):
         else:
             return None, len(close), None
 
-    def cost_function(link):
-        return link.cost
-
     return _uniform_cost_search_aux(
         source, abstract_map, result_function, result_item, cost_function, goal_test, target=target
     )
+
+
+def a_star_search(source, target, cost_function, heuristic_function, roads_junctions):
+    def result_item(next):
+        return _path(next), next.cost
+
+    def goal_test(next, centers, source, target):
+        return next.state == target
+
+    def result_function(source, result_list, roads_junctions, close, num_closed):
+        if len(result_list) > 0:
+            return result_list[0][0], num_closed, result_list[0][1]
+        else:
+            return None, num_closed, None
+
+    return _a_star_search_aux(source, roads_junctions, result_function, result_item, heuristic_function,
+                              cost_function, goal_test, None, target, 1)
+
+
+def a_star_search_abstract(source, target, cost_function, heuristic_function, abstract_map):
+    def result_item(next):
+        return _abstract_path(next), next.cost
+
+    def goal_test(next, centers, source, target):
+        return next.state == target
+
+    def result_function(source, result_list, roads_junctions, close, num_closed):
+        if len(result_list) > 0:
+            return result_list[0][0], num_closed, result_list[0][1]
+        else:
+            return None, num_closed, None
+
+    return _a_star_search_aux(source, abstract_map, result_function, result_item,
+                              heuristic_function, cost_function, goal_test, None, target, 1)
+

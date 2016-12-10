@@ -40,7 +40,7 @@ def bw_with_information_and_already_loaded(source, target, abstractMap, roads_ju
             # c:
             if path_b is not None:
                 path_c, closed_c, cost_c = uniform_cost_search_abstract(
-                    junc1, junc2, abstractMap)
+                    junc1, junc2, lambda link: link.cost, abstractMap)
                 # d:
                 if path_c is not None:
                     return path_a + path_c[1:] + path_b[1:], \
