@@ -121,14 +121,38 @@ def _a_star_search_aux(source, roads_junctions, result_function, result_item, he
 
 def _uniform_cost_search_aux(source, roads_junctions, result_function, result_item, cost_function,
                              goal_test, centers=None, target=None, solution_limit=1):
-    def heuristic_function(source, target, roads_junctions):
-        return 0
+    open_heapq = [Node(source, None, 0)]
+    open_set = {source}
+    close = set()
+    result_list = []
 
-    def result_function_astar(source, result_list, roads_junctions, closed, num_closed):
-        return result_function(source, result_list, roads_junctions, closed)
+    while open_heapq:
+        next = heappop(open_heapq)
+        open_set.discard(next.state)
+        close.add(next.state)
 
-    return _a_star_search_aux(source, roads_junctions, result_function_astar, result_item, heuristic_function,
-                              cost_function, goal_test, centers, target, solution_limit)
+        if goal_test(next, centers, source, target):
+            result_list.append(result_item(next))
+            if len(result_list) >= solution_limit:
+                break
+            else:
+                continue
+
+        for link in _expand(next.state, roads_junctions):
+            if link.target not in close:
+                new_cost = next.cost + cost_function(link)
+                if link.target in open_set:
+                    old_node_index = open_heapq.index(Node(link.target, None, None))
+                    old_node = open_heapq[old_node_index]
+                    if old_node.cost > new_cost:
+                        old_node.parent = next
+                        old_node.parent_link = link.path if type(link) is AbstractLink else None
+                        _decrease_key(open_heapq, old_node_index, new_cost)
+                else:
+                    heappush(open_heapq, Node(link.target, next, new_cost,
+                                              link.path if type(link) is AbstractLink else None))
+                    open_set.add(link.target)
+    return result_function(source, result_list, roads_junctions, close)
 
 
 def uniform_cost_search(source, target, cost_function, roads_junctions):
