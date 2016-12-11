@@ -15,8 +15,8 @@ def a_star(source, target):
     return a_star_with_information(source, target)[0]
 
     
-def a_star_exp3(source, target,abstractMap):
-    raise a_star_exp3_with_information(source, target, abstractMap)[0]
+def a_star_exp3(source, target, abstractMap):
+    return a_star_exp3_with_information(source, target, abstractMap)[0]
 
 
 def dispatch(argv):
