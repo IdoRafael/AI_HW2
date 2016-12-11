@@ -8,15 +8,16 @@ We just parse input and call methods from other modules.
 #simply import your modules and call the appropriate functions
 
 
-import algorithms
+from algorithms import a_star_with_information, a_star_exp3_with_information
 
 
 def a_star(source, target):
-    return algorithms.a_star_with_information(source, target)[0]
+    return a_star_with_information(source, target)[0]
 
     
 def a_star_exp3(source, target,abstractMap):
-    raise NotImplementedError
+    raise a_star_exp3_with_information(source, target, abstractMap)[0]
+
 
 def dispatch(argv):
     from sys import argv

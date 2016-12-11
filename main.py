@@ -7,7 +7,7 @@ We just parse input and call methods from other modules.
 #do NOT import ways. This should be done from other files
 #simply import your modules and call the appropriate functions
 
-import algorithms
+from algorithms import base_with_information, better_waze_with_information
 
 
 def base(source, target):
@@ -16,7 +16,7 @@ def base(source, target):
     # Using base Uniform Cost Search algorithm:
     #   Returns lowest cost (distance) path between source and target.
     #   If not found returns None
-    return algorithms.base_with_information(source, target)[0]
+    return base_with_information(source, target)[0]
 
     
 def betterWaze(source, target,abstractMap=None):
@@ -30,7 +30,7 @@ def betterWaze(source, target,abstractMap=None):
     # Using our betterWaze algorithm:
     #   Return lowest cost (distance) path between source and target.
     #   If not found returns None
-    return algorithms.better_waze_with_information(source, target, abstractMap)[0]
+    return better_waze_with_information(source, target, abstractMap)[0]
     
 
 def dispatch(argv):
