@@ -1,6 +1,7 @@
 from algorithms import base_with_information_and_already_loaded,\
     bw_with_information_and_already_loaded, a_star_with_information_and_already_loaded,\
-    a_star_exp3_with_information_and_already_loaded
+    a_star_exp3_with_information_and_already_loaded, ucs_time_with_information_and_already_loaded,\
+    a_star_time_with_information_and_already_loaded
 from ways.tools import dbopen
 import pickle
 from ways.graph import load_map_from_csv
@@ -18,14 +19,28 @@ def bw_experiment(i, j, abstract_map, roads_junctions):
         i, j, abstract_map, roads_junctions)
     return num_closed, cost
 
+
 def a_star_experiment(i, j, roads_junctions):
     path, num_closed, cost = a_star_with_information_and_already_loaded(
         i, j, roads_junctions)
     return num_closed, cost
 
+
 def a_star_exp3_experiment(i, j, abstract_map, roads_junctions):
     path, num_closed, cost = a_star_exp3_with_information_and_already_loaded(
         i, j, abstract_map, roads_junctions)
+    return num_closed, cost
+
+
+def ucs_time_experiment(i, j, roads_junctions):
+    path, num_closed, cost = ucs_time_with_information_and_already_loaded(
+        i, j, roads_junctions)
+    return num_closed, cost
+
+
+def a_star_time_experiment(i, j, roads_junctions):
+    path, num_closed, cost = a_star_time_with_information_and_already_loaded(
+        i, j, roads_junctions)
     return num_closed, cost
 
 
@@ -85,6 +100,26 @@ def create_experiment2_csv():
             f.write((','.join(map(str, line[i, j])) + '\n'))
 
 
+@timed
+def create_experiment3_csv():
+    roads_junctions = load_map_from_csv().junctions()
+    import csv
+    with dbopen('dataSet.csv', 'rt') as f:
+        dataset = [(int(row[0]), int(row[1])) for row in csv.reader(f)]
+
+    line = {}
+    for i, j in dataset:
+        num_closed, cost = ucs_time_experiment(i, j, roads_junctions)
+        line[i, j] = [i, j, num_closed, cost]
+        num_closed, cost = a_star_time_experiment(i, j, roads_junctions)
+        line[i, j] += [num_closed, cost]
+
+    with dbopen('experiment3.csv', 'wt') as f:
+        for i, j in dataset:
+            f.write((','.join(map(str, line[i, j])) + '\n'))
+
+
 if __name__ == '__main__':
-    create_experiment_csv()
-    create_experiment2_csv()
+    # create_experiment_csv()
+    # create_experiment2_csv()
+    create_experiment3_csv()
