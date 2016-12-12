@@ -2,6 +2,7 @@ from ways.graph import load_map_from_csv
 from search import uniform_cost_search, find_nearest_center,\
     uniform_cost_search_abstract, a_star_search, a_star_search_abstract
 from ways.tools import compute_distance
+from cost import expected_time
 
 
 def find_nearest_center_by_air(target, roads_junctions, centers):
@@ -67,6 +68,12 @@ def _heuristic_aerial_distance(source, target, roads_junctions):
     return compute_distance(j0.lat, j0.lon, j1.lat, j1.lon) * 1000
 
 
+def _heuristic_minimal_time(source, target, roads_junctions):
+    j0 = roads_junctions[source]
+    j1 = roads_junctions[target]
+    return compute_distance(j0.lat, j0.lon, j1.lat, j1.lon) / 110
+
+
 def a_star_with_information_and_already_loaded(source, target, roads_junctions):
     # returns (path, number_closed, cost).
     # if no path found, returns (None, number_closed, None)
@@ -115,3 +122,24 @@ def a_star_exp3_with_information(source, target, abstractMap):
     return a_star_exp3_with_information_and_already_loaded(source, target, abstractMap, roads_junctions)
 
 
+def ucs_time_with_information_and_already_loaded(source, target, roads_junctions):
+    # returns (path, number_closed, cost).
+    # if no path found, returns (None, number_closed, None)
+    return uniform_cost_search(source, target, expected_time, roads_junctions)
+
+
+def ucs_time_with_information(source, target):
+    roads_junctions = load_map_from_csv().junctions()
+    return ucs_time_with_information_and_already_loaded(source, target, roads_junctions)
+
+
+def a_star_time_with_information_and_already_loaded(source, target, roads_junctions):
+    # returns (path, number_closed, cost).
+    # if no path found, returns (None, number_closed, None)
+    return a_star_search(source, target, expected_time,
+                         _heuristic_minimal_time, roads_junctions)
+
+
+def a_star_time_with_information(source, target):
+    roads_junctions = load_map_from_csv().junctions()
+    return a_star_time_with_information_and_already_loaded(source, target, roads_junctions)

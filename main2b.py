@@ -4,15 +4,20 @@ Don't use this file for the actual work; only minimal code should be here.
 We just parse input and call methods from other modules.
 '''
 
-#do NOT import ways. This should be done from other files
-#simply import your modules and call the appropriate functions
-    
+
+# do NOT import ways. This should be done from other files
+# simply import your modules and call the appropriate functions
+
+
+from algorithms import a_star_time_with_information, ucs_time_with_information
+
+
 def uc_time(source, target):
-    raise NotImplementedError
+    return ucs_time_with_information(source, target)[0]
 
     
 def a_star_time(source, target):
-    raise NotImplementedError
+    return a_star_time_with_information(source, target)[0]
     
 
 def dispatch(argv):
