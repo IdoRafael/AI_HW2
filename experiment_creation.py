@@ -120,6 +120,6 @@ def create_experiment3_csv():
 
 
 if __name__ == '__main__':
-    # create_experiment_csv()
-    # create_experiment2_csv()
+    create_experiment_csv()
+    create_experiment2_csv()
     create_experiment3_csv()
